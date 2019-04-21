@@ -53,14 +53,15 @@
    Returns a new cURL multi handle */
 PHP_FUNCTION(curl_winssl_multi_init)
 {
-	php_cur_winssllm *mh;
+	php_curl_winsslm *mh;
 
 	if (zend_parse_parameters_none() == FAILURE) {
 		return;
 	}
 
-	mh = ecalloc(1, sizeof(php_cur_winssllm));
+	mh = ecalloc(1, sizeof(php_curl_winsslm));
 	mh->multi = curl_multi_init();
+	mh->handlers = ecalloc(1, sizeof(php_curl_winsslm_handlers));
 
 	zend_llist_init(&mh->easyh, sizeof(zval), _php_curl_winssl_multi_cleanup_list, 0);
 
@@ -74,7 +75,7 @@ PHP_FUNCTION(curl_winssl_multi_add_handle)
 {
 	zval      *z_mh;
 	zval      *z_ch;
-	php_cur_winssllm *mh;
+	php_curl_winsslm *mh;
 	php_curl_winssl *ch;
 	zval tmp_val;
 
@@ -82,7 +83,7 @@ PHP_FUNCTION(curl_winssl_multi_add_handle)
 		return;
 	}
 
-	if ((mh = (php_cur_winssllm *)zend_fetch_resource(Z_RES_P(z_mh), le_curl_winssl_multi_handle_name, le_curl_winssl_multi_handle)) == NULL) {
+	if ((mh = (php_curl_winsslm *)zend_fetch_resource(Z_RES_P(z_mh), le_curl_winssl_multi_handle_name, le_curl_winssl_multi_handle)) == NULL) {
 		RETURN_FALSE;
 	}
 
@@ -129,20 +130,43 @@ static int curl_compare_resources( zval *z1, zval *z2 ) /* {{{ */
 }
 /* }}} */
 
+/* Used to find the php_curl_winssl resource for a given curl easy handle */
+static zval *_php_curl_winssl_multi_find_easy_handle(php_curl_winsslm *mh, CURL *easy) /* {{{ */
+{
+	php_curl_winssl 		*tmp_ch;
+	zend_llist_position pos;
+	zval				*pz_ch_temp;
+
+	for(pz_ch_temp = (zval *)zend_llist_get_first_ex(&mh->easyh, &pos); pz_ch_temp;
+		pz_ch_temp = (zval *)zend_llist_get_next_ex(&mh->easyh, &pos)) {
+
+		if ((tmp_ch = (php_curl_winssl *)zend_fetch_resource(Z_RES_P(pz_ch_temp), le_curl_winssl_name, le_curl_winssl)) == NULL) {
+			return NULL;
+		}
+
+		if (tmp_ch->cp == easy) {
+			return pz_ch_temp;
+		}
+	}
+
+	return NULL;
+}
+/* }}} */
+
 /* {{{ proto int curl_winssl_multi_remove_handle(resource mh, resource ch)
    Remove a multi handle from a set of cURL handles */
 PHP_FUNCTION(curl_winssl_multi_remove_handle)
 {
 	zval      *z_mh;
 	zval      *z_ch;
-	php_cur_winssllm *mh;
+	php_curl_winsslm *mh;
 	php_curl_winssl *ch;
 
 	if (zend_parse_parameters(ZEND_NUM_ARGS(), "rr", &z_mh, &z_ch) == FAILURE) {
 		return;
 	}
 
-	if ((mh = (php_cur_winssllm *)zend_fetch_resource(Z_RES_P(z_mh), le_curl_winssl_multi_handle_name, le_curl_winssl_multi_handle)) == NULL) {
+	if ((mh = (php_curl_winsslm *)zend_fetch_resource(Z_RES_P(z_mh), le_curl_winssl_multi_handle_name, le_curl_winssl_multi_handle)) == NULL) {
 		RETURN_FALSE;
 	}
 
@@ -171,7 +195,7 @@ static void _make_timeval_struct(struct timeval *to, double timeout) /* {{{ */
 PHP_FUNCTION(curl_winssl_multi_select)
 {
 	zval           *z_mh;
-	php_cur_winssllm      *mh;
+	php_curl_winsslm      *mh;
 	fd_set          readfds;
 	fd_set          writefds;
 	fd_set          exceptfds;
@@ -183,7 +207,7 @@ PHP_FUNCTION(curl_winssl_multi_select)
 		return;
 	}
 
-	if ((mh = (php_cur_winssllm *)zend_fetch_resource(Z_RES_P(z_mh), le_curl_winssl_multi_handle_name, le_curl_winssl_multi_handle)) == NULL) {
+	if ((mh = (php_curl_winsslm *)zend_fetch_resource(Z_RES_P(z_mh), le_curl_winssl_multi_handle_name, le_curl_winssl_multi_handle)) == NULL) {
 		RETURN_FALSE;
 	}
 
@@ -207,7 +231,7 @@ PHP_FUNCTION(curl_winssl_multi_exec)
 {
 	zval      *z_mh;
 	zval      *z_still_running;
-	php_cur_winssllm *mh;
+	php_curl_winsslm *mh;
 	int        still_running;
 	int        result;
 
@@ -215,7 +239,7 @@ PHP_FUNCTION(curl_winssl_multi_exec)
 		return;
 	}
 
-	if ((mh = (php_cur_winssllm *)zend_fetch_resource(Z_RES_P(z_mh), le_curl_winssl_multi_handle_name, le_curl_winssl_multi_handle)) == NULL) {
+	if ((mh = (php_curl_winsslm *)zend_fetch_resource(Z_RES_P(z_mh), le_curl_winssl_multi_handle_name, le_curl_winssl_multi_handle)) == NULL) {
 		RETURN_FALSE;
 	}
 
@@ -276,7 +300,7 @@ PHP_FUNCTION(curl_winssl_multi_getcontent)
 PHP_FUNCTION(curl_winssl_multi_info_read)
 {
 	zval      *z_mh;
-	php_cur_winssllm *mh;
+	php_curl_winsslm *mh;
 	CURLMsg	  *tmp_msg;
 	int        queued_msgs;
 	zval      *zmsgs_in_queue = NULL;
@@ -285,7 +309,7 @@ PHP_FUNCTION(curl_winssl_multi_info_read)
 		return;
 	}
 
-	if ((mh = (php_cur_winssllm *)zend_fetch_resource(Z_RES_P(z_mh), le_curl_winssl_multi_handle_name, le_curl_winssl_multi_handle)) == NULL) {
+	if ((mh = (php_curl_winsslm *)zend_fetch_resource(Z_RES_P(z_mh), le_curl_winssl_multi_handle_name, le_curl_winssl_multi_handle)) == NULL) {
 		RETURN_FALSE;
 	}
 
@@ -343,13 +367,13 @@ PHP_FUNCTION(curl_winssl_multi_info_read)
 PHP_FUNCTION(curl_winssl_multi_close)
 {
 	zval      *z_mh;
-	php_cur_winssllm *mh;
+	php_curl_winsslm *mh;
 
 	if (zend_parse_parameters(ZEND_NUM_ARGS(), "r", &z_mh) == FAILURE) {
 		return;
 	}
 
-	if ((mh = (php_cur_winssllm *)zend_fetch_resource(Z_RES_P(z_mh), le_curl_winssl_multi_handle_name, le_curl_winssl_multi_handle)) == NULL) {
+	if ((mh = (php_curl_winsslm *)zend_fetch_resource(Z_RES_P(z_mh), le_curl_winssl_multi_handle_name, le_curl_winssl_multi_handle)) == NULL) {
 		RETURN_FALSE;
 	}
 
@@ -359,7 +383,7 @@ PHP_FUNCTION(curl_winssl_multi_close)
 
 void _php_curl_winssl_multi_close(zend_resource *rsrc) /* {{{ */
 {
-	php_cur_winssllm *mh = (php_cur_winssllm *)rsrc->ptr;
+	php_curl_winsslm *mh = (php_curl_winsslm *)rsrc->ptr;
 	if (mh) {
 		zend_llist_position pos;
 		php_curl_winssl *ch;
@@ -377,6 +401,12 @@ void _php_curl_winssl_multi_close(zend_resource *rsrc) /* {{{ */
 
 		curl_multi_cleanup(mh->multi);
 		zend_llist_clean(&mh->easyh);
+		if (mh->handlers->server_push) {
+			efree(mh->handlers->server_push);
+		}
+		if (mh->handlers) {
+			efree(mh->handlers);
+		}
 		efree(mh);
 		rsrc->ptr = NULL;
 	}
@@ -405,8 +435,85 @@ PHP_FUNCTION(curl_winssl_multi_strerror)
 /* }}} */
 #endif
 
+#if LIBCURL_VERSION_NUM >= 0x072C00 /* Available since 7.44.0 */
+
+static int _php_server_push_callback(CURL *parent_ch, CURL *easy, size_t num_headers, struct curl_pushheaders *push_headers, void *userp) /* {{{ */
+{
+	php_curl_winssl 			*ch;
+	php_curl_winssl 			*parent;
+	php_curl_winsslm 			*mh 			= (php_curl_winsslm *)userp;
+	size_t 					rval 			= CURL_PUSH_DENY;
+	php_curl_winsslm_server_push 	*t 				= mh->handlers->server_push;
+	zval                                    *pz_parent_ch   = NULL;
+	zval                                    pz_ch;
+	zval                                    headers;
+	zval                                    retval;
+	zend_resource                   *res;
+	char                                    *header;
+	int                                     error;
+	zend_fcall_info                 fci                     = empty_fcall_info;
+
+	pz_parent_ch = _php_curl_winssl_multi_find_easy_handle(mh, parent_ch);
+	if (pz_parent_ch == NULL) {
+		return rval;
+	}
+
+	parent = (php_curl_winssl*)zend_fetch_resource(Z_RES_P(pz_parent_ch), le_curl_winssl_name, le_curl_winssl);
+
+	ch = alloc_curl_handle();
+	ch->cp = easy;
+	_php_setup_easy_copy_handlers(ch, parent);
+
+	Z_ADDREF_P(pz_parent_ch);
+
+	res = zend_register_resource(ch, le_curl_winssl);
+	ZVAL_RES(&pz_ch, res);
+
+	size_t i;
+	array_init(&headers);
+	for(i=0; i<num_headers; i++) {
+		header = curl_pushheader_bynum(push_headers, i);
+		add_next_index_string(&headers, header);
+	}
+
+	zend_fcall_info_init(&t->func_name, 0, &fci, &t->fci_cache, NULL, NULL);
+
+	zend_fcall_info_argn(
+		&fci, 3,
+		pz_parent_ch,
+		&pz_ch,
+		&headers
+	);
+
+	fci.retval = &retval;
+
+	error = zend_call_function(&fci, &t->fci_cache);
+	zend_fcall_info_args_clear(&fci, 1);
+	zval_dtor(&headers);
+
+	if (error == FAILURE) {
+		php_error_docref(NULL, E_WARNING, "Cannot call the CURLMOPT_PUSHFUNCTION");
+	} else if (!Z_ISUNDEF(retval)) {
+		if (CURL_PUSH_DENY != zval_get_long(&retval)) {
+		    rval = CURL_PUSH_OK;
+
+			/* we want to create a copy of this zval that we store in the multihandle structure element "easyh" */
+			zval tmp_val;
+			ZVAL_DUP(&tmp_val, &pz_ch);
+			zend_llist_add_element(&mh->easyh, &tmp_val);
+		} else {
+			/* libcurl will free this easy handle, avoid double free */
+			ch->cp = NULL;
+		}
+	}
+
+	return rval;
+}
+
+#endif
+
 #if LIBCURL_VERSION_NUM >= 0x070f04 /* 7.15.4 */
-static int _php_curl_winssl_multi_setopt(php_cur_winssllm *mh, zend_long option, zval *zvalue, zval *return_value) /* {{{ */
+static int _php_curl_winssl_multi_setopt(php_curl_winsslm *mh, zend_long option, zval *zvalue, zval *return_value) /* {{{ */
 {
 	CURLMcode error = CURLM_OK;
 
@@ -427,6 +534,29 @@ static int _php_curl_winssl_multi_setopt(php_cur_winssllm *mh, zend_long option,
 			error = curl_multi_setopt(mh->multi, option, zval_get_long(zvalue));
 			break;
 
+#if LIBCURL_VERSION_NUM > 0x072D00 /* Available since 7.46.0 */
+		case CURLMOPT_PUSHFUNCTION:
+			if (mh->handlers->server_push == NULL) {
+				mh->handlers->server_push = ecalloc(1, sizeof(php_curl_winsslm_server_push));
+			} else if (!Z_ISUNDEF(mh->handlers->server_push->func_name)) {
+				zval_ptr_dtor(&mh->handlers->server_push->func_name);
+				mh->handlers->server_push->fci_cache = empty_fcall_info_cache;
+			}
+
+			ZVAL_COPY(&mh->handlers->server_push->func_name, zvalue);
+			mh->handlers->server_push->method = PHP_CURL_USER;
+			if (!Z_ISUNDEF(mh->handlers->server_push->func_name)) {
+				zval_ptr_dtor(&mh->handlers->server_push->func_name);
+				mh->handlers->server_push->fci_cache = empty_fcall_info_cache;
+ 
+			}
+			error = curl_multi_setopt(mh->multi, option, _php_server_push_callback);
+			if (error != CURLM_OK) {
+				return 0;
+			}
+			error = curl_multi_setopt(mh->multi, CURLMOPT_PUSHDATA, mh);
+			break;
+#endif
 		default:
 			php_error_docref(NULL, E_WARNING, "Invalid curl multi configuration option");
 			error = CURLM_UNKNOWN_OPTION;
@@ -442,18 +572,18 @@ static int _php_curl_winssl_multi_setopt(php_cur_winssllm *mh, zend_long option,
 /* }}} */
 
 /* {{{ proto int curl_winssl_multi_setopt(resource mh, int option, mixed value)
-       Set an option for the curl multi handle */
+	Set an option for the curl multi handle */
 PHP_FUNCTION(curl_winssl_multi_setopt)
 {
 	zval       *z_mh, *zvalue;
 	zend_long        options;
-	php_cur_winssllm *mh;
+	php_curl_winsslm *mh;
 
 	if (zend_parse_parameters(ZEND_NUM_ARGS(), "rlz", &z_mh, &options, &zvalue) == FAILURE) {
 		return;
 	}
 
-	if ((mh = (php_cur_winssllm *)zend_fetch_resource(Z_RES_P(z_mh), le_curl_winssl_multi_handle_name, le_curl_winssl_multi_handle)) == NULL) {
+	if ((mh = (php_curl_winsslm *)zend_fetch_resource(Z_RES_P(z_mh), le_curl_winssl_multi_handle_name, le_curl_winssl_multi_handle)) == NULL) {
 		RETURN_FALSE;
 	}
 

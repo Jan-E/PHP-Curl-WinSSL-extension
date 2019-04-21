@@ -165,7 +165,7 @@ static const zend_function_entry curl_winsslfile_funcs[] = {
 	PHP_FE_END
 };
 
-void curl_winsslfile_register_class(void)
+void curlfile_register_class(void)
 {
 	zend_class_entry ce;
 	INIT_CLASS_ENTRY( ce, "CURL_WINSSLFile", curl_winsslfile_funcs );

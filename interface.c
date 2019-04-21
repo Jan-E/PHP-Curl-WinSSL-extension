@@ -1491,7 +1491,7 @@ PHP_MINIT_FUNCTION(curl_winssl)
 		return FAILURE;
 	}
 
-	curl_winsslfile_register_class();
+	curlfile_register_class();
 
 	return SUCCESS;
 }
@@ -1985,7 +1985,7 @@ PHP_FUNCTION(curl_winssl_version)
 
 /* {{{ alloc_curl_handle
  */
-static php_curl_winssl *alloc_curl_handle()
+php_curl_winssl *alloc_curl_handle()
 {
 	php_curl_winssl *ch        = ecalloc(1, sizeof(php_curl_winssl));
 	ch->to_free                = ecalloc(1, sizeof(struct _php_curl_winssl_free));
@@ -2123,6 +2123,79 @@ PHP_FUNCTION(curl_winssl_init)
 	ch->res = Z_RES_P(return_value);
 }
 /* }}} */
+
+void _php_setup_easy_copy_handlers(php_curl_winssl *ch, php_curl_winssl *source)
+{
+	if (!Z_ISUNDEF(source->handlers->write->stream)) {
+		Z_ADDREF(source->handlers->write->stream);
+	}
+	ch->handlers->write->stream = source->handlers->write->stream;
+	ch->handlers->write->method = source->handlers->write->method;
+	if (!Z_ISUNDEF(source->handlers->read->stream)) {
+		Z_ADDREF(source->handlers->read->stream);
+	}
+	ch->handlers->read->stream  = source->handlers->read->stream;
+	ch->handlers->read->method  = source->handlers->read->method;
+	ch->handlers->write_header->method = source->handlers->write_header->method;
+	if (!Z_ISUNDEF(source->handlers->write_header->stream)) {
+		Z_ADDREF(source->handlers->write_header->stream);
+	}
+	ch->handlers->write_header->stream = source->handlers->write_header->stream;
+
+	ch->handlers->write->fp = source->handlers->write->fp;
+	ch->handlers->write_header->fp = source->handlers->write_header->fp;
+	ch->handlers->read->fp = source->handlers->read->fp;
+	ch->handlers->read->res = source->handlers->read->res;
+#if CURLOPT_PASSWDDATA != 0
+	if (!Z_ISUNDEF(source->handlers->passwd)) {
+		ZVAL_COPY(&ch->handlers->passwd, &source->handlers->passwd);
+		curl_easy_setopt(source->cp, CURLOPT_PASSWDDATA, (void *) ch);
+	}
+#endif
+	if (!Z_ISUNDEF(source->handlers->write->func_name)) {
+		ZVAL_COPY(&ch->handlers->write->func_name, &source->handlers->write->func_name);
+	}
+	if (!Z_ISUNDEF(source->handlers->read->func_name)) {
+		ZVAL_COPY(&ch->handlers->read->func_name, &source->handlers->read->func_name);
+	}
+	if (!Z_ISUNDEF(source->handlers->write_header->func_name)) {
+		ZVAL_COPY(&ch->handlers->write_header->func_name, &source->handlers->write_header->func_name);
+	}
+
+	curl_easy_setopt(ch->cp, CURLOPT_ERRORBUFFER,       ch->err.str);
+	curl_easy_setopt(ch->cp, CURLOPT_FILE,              (void *) ch);
+	curl_easy_setopt(ch->cp, CURLOPT_INFILE,            (void *) ch);
+	curl_easy_setopt(ch->cp, CURLOPT_WRITEHEADER,       (void *) ch);
+
+	if (source->handlers->progress) {
+		ch->handlers->progress = ecalloc(1, sizeof(php_curl_winssl_progress));
+		if (!Z_ISUNDEF(source->handlers->progress->func_name)) {
+			ZVAL_COPY(&ch->handlers->progress->func_name, &source->handlers->progress->func_name);
+		}
+		ch->handlers->progress->method = source->handlers->progress->method;
+		curl_easy_setopt(ch->cp, CURLOPT_PROGRESSDATA, (void *) ch);
+	}
+
+#if LIBCURL_VERSION_NUM >= 0x071500
+	if (source->handlers->fnmatch) {
+		ch->handlers->fnmatch = ecalloc(1, sizeof(php_curl_winssl_fnmatch));
+		if (!Z_ISUNDEF(source->handlers->fnmatch->func_name)) {
+			ZVAL_COPY(&ch->handlers->fnmatch->func_name, &source->handlers->fnmatch->func_name);
+		}
+		ch->handlers->fnmatch->method = source->handlers->fnmatch->method;
+		curl_easy_setopt(ch->cp, CURLOPT_FNMATCH_DATA, (void *) ch);
+	}
+#endif
+
+	efree(ch->to_free->slist);
+	efree(ch->to_free);
+	ch->to_free = source->to_free;
+	efree(ch->clone);
+	ch->clone = source->clone;
+
+	/* Keep track of cloned copies to avoid invoking curl destructors for every clone */
+	(*source->clone)++;
+}
 
 /* {{{ proto resource curl_winssl_copy_handle(resource ch)
    Copy a cURL handle along with all of it's preferences */
@@ -3485,10 +3558,12 @@ static void _php_curl_winssl_close_ex(php_curl_winssl *ch)
 	 *
 	 * Libcurl commit d021f2e8a00 fix this issue and should be part of 7.28.2
 	 */
-	curl_easy_setopt(ch->cp, CURLOPT_HEADERFUNCTION, curl_write_nothing);
-	curl_easy_setopt(ch->cp, CURLOPT_WRITEFUNCTION, curl_write_nothing);
+	if (ch->cp != NULL) {
+		curl_easy_setopt(ch->cp, CURLOPT_HEADERFUNCTION, curl_write_nothing);
+		curl_easy_setopt(ch->cp, CURLOPT_WRITEFUNCTION, curl_write_nothing);
 
-	curl_easy_cleanup(ch->cp);
+		curl_easy_cleanup(ch->cp);
+	}
 
 	/* cURL destructors should be invoked only by last curl handle */
 	if (--(*ch->clone) == 0) {

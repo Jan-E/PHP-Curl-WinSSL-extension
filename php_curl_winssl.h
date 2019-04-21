@@ -66,6 +66,8 @@ extern int  le_curl_winssl_multi_handle;
 #define le_curl_winssl_multi_handle_name "cURL Multi Handle"
 extern int  le_curl_winssl_share_handle;
 #define le_curl_winssl_share_handle_name "cURL Share Handle"
+//extern int  le_curl_winssl_pushheaders;
+//#define le_curl_winssl_pushheaders "cURL Push Headers"
 
 PHP_MINIT_FUNCTION(curl_winssl);
 PHP_MSHUTDOWN_FUNCTION(curl_winssl);
@@ -142,7 +144,7 @@ typedef struct {
 	zval                  func_name;
 	zend_fcall_info_cache fci_cache;
 	int                   method;
-} php_curl_winssl_progress, php_curl_winssl_fnmatch;
+} php_curl_winssl_progress, php_curl_winssl_fnmatch, php_curl_winsslm_server_push;
 
 typedef struct {
 	php_curl_winssl_write    *write;
@@ -187,20 +189,33 @@ typedef struct {
 #define CURLOPT_SAFE_UPLOAD -1
 
 typedef struct {
+	php_curl_winsslm_server_push	*server_push;
+} php_curl_winsslm_handlers;
+
+typedef struct {
 	int         still_running;
 	CURLM      *multi;
 	zend_llist  easyh;
-} php_cur_winssllm;
+	php_curl_winsslm_handlers *handlers;
+	struct {
+		int no;
+	} err;
+} php_curl_winsslm;
 
 typedef struct {
 	CURLSH     *share;
+	struct {
+		int no;
+	} err;
 } php_curl_winsslsh;
 
+php_curl_winssl *alloc_curl_handle();
 void _php_curl_winssl_cleanup_handle(php_curl_winssl *);
 void _php_curl_winssl_multi_cleanup_list(void *data);
 void _php_curl_winssl_verify_handlers(php_curl_winssl *ch, int reporterror);
+void _php_setup_easy_copy_handlers(php_curl_winssl *ch, php_curl_winssl *source);
 
-void CURLFile_register_class(void);
+void curlfile_register_class(void);
 PHP_CURL_WINSSL_API extern zend_class_entry *curl_CURLFile_class;
 
 #else
