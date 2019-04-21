@@ -27,7 +27,7 @@
 #include "php_curl_winssl.h"
 #if HAVE_CURL_WINSSL
 
-PHP_CURL_WINSSL_API zend_class_entry *curl_CURL_WINSSLFile_class;
+PHP_CURL_WINSSL_API zend_class_entry *curl_CURLFile_class;
 
 static void curl_winsslfile_ctor(INTERNAL_FUNCTION_PARAMETERS)
 {
@@ -40,15 +40,15 @@ static void curl_winsslfile_ctor(INTERNAL_FUNCTION_PARAMETERS)
 	}
 
 	if (fname) {
-		zend_update_property_string(curl_CURL_WINSSLFile_class, cf, "name", sizeof("name")-1, fname);
+		zend_update_property_string(curl_CURLFile_class, cf, "name", sizeof("name")-1, fname);
 	}
 
 	if (mime) {
-		zend_update_property_string(curl_CURL_WINSSLFile_class, cf, "mime", sizeof("mime")-1, mime);
+		zend_update_property_string(curl_CURLFile_class, cf, "mime", sizeof("mime")-1, mime);
 	}
 
 	if (postname) {
-		zend_update_property_string(curl_CURL_WINSSLFile_class, cf, "postname", sizeof("postname")-1, postname);
+		zend_update_property_string(curl_CURLFile_class, cf, "postname", sizeof("postname")-1, postname);
 	}
 }
 
@@ -65,7 +65,7 @@ ZEND_METHOD(CURL_WINSSLFile, __construct)
    Create the CURL_WINSSLFile object */
 PHP_FUNCTION(curl_winssl_file_create)
 {
-    object_init_ex( return_value, curl_CURL_WINSSLFile_class );
+    object_init_ex( return_value, curl_CURLFile_class );
     curl_winsslfile_ctor(INTERNAL_FUNCTION_PARAM_PASSTHRU);
 }
 /* }}} */
@@ -77,7 +77,7 @@ static void curl_winsslfile_get_property(char *name, INTERNAL_FUNCTION_PARAMETER
 	if (zend_parse_parameters_none() == FAILURE) {
 		return;
 	}
-	res = zend_read_property(curl_CURL_WINSSLFile_class, getThis(), name, strlen(name), 1, &rv);
+	res = zend_read_property(curl_CURLFile_class, getThis(), name, strlen(name), 1, &rv);
 	ZVAL_DEREF(res);
 	ZVAL_COPY(return_value, res);
 }
@@ -90,7 +90,7 @@ static void curl_winsslfile_set_property(char *name, INTERNAL_FUNCTION_PARAMETER
 	if (zend_parse_parameters(ZEND_NUM_ARGS(), "s", &arg, &arg_len) == FAILURE) {
 		return;
 	}
-	zend_update_property_string(curl_CURL_WINSSLFile_class, getThis(), name, strlen(name), arg);
+	zend_update_property_string(curl_CURLFile_class, getThis(), name, strlen(name), arg);
 }
 
 /* {{{ proto string CURL_WINSSLFile::getFilename()
@@ -137,8 +137,8 @@ ZEND_METHOD(CURL_WINSSLFile, setPostFilename)
    Unserialization handler */
 ZEND_METHOD(CURL_WINSSLFile, __wakeup)
 {
-	zend_unset_property(curl_CURL_WINSSLFile_class, getThis(), "name", sizeof("name")-1);
-	zend_update_property_string(curl_CURL_WINSSLFile_class, getThis(), "name", sizeof("name")-1, "");
+	zend_unset_property(curl_CURLFile_class, getThis(), "name", sizeof("name")-1);
+	zend_update_property_string(curl_CURLFile_class, getThis(), "name", sizeof("name")-1, "");
 	zend_throw_exception(NULL, "Unserialization of CURL_WINSSLFile instances is not allowed", 0);
 }
 /* }}} */
@@ -169,10 +169,10 @@ void curl_winsslfile_register_class(void)
 {
 	zend_class_entry ce;
 	INIT_CLASS_ENTRY( ce, "CURL_WINSSLFile", curl_winsslfile_funcs );
-	curl_CURL_WINSSLFile_class = zend_register_internal_class(&ce);
-	zend_declare_property_string(curl_CURL_WINSSLFile_class, "name", sizeof("name")-1, "", ZEND_ACC_PUBLIC);
-	zend_declare_property_string(curl_CURL_WINSSLFile_class, "mime", sizeof("mime")-1, "", ZEND_ACC_PUBLIC);
-	zend_declare_property_string(curl_CURL_WINSSLFile_class, "postname", sizeof("postname")-1, "", ZEND_ACC_PUBLIC);
+	curl_CURLFile_class = zend_register_internal_class(&ce);
+	zend_declare_property_string(curl_CURLFile_class, "name", sizeof("name")-1, "", ZEND_ACC_PUBLIC);
+	zend_declare_property_string(curl_CURLFile_class, "mime", sizeof("mime")-1, "", ZEND_ACC_PUBLIC);
+	zend_declare_property_string(curl_CURLFile_class, "postname", sizeof("postname")-1, "", ZEND_ACC_PUBLIC);
 }
 
 #endif
