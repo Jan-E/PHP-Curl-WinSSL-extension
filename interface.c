@@ -504,6 +504,7 @@ ZEND_GET_MODULE (curl_winssl)
 /* {{{ PHP_INI_BEGIN */
 PHP_INI_BEGIN()
 	PHP_INI_ENTRY("curl_winssl.cainfo", "", PHP_INI_SYSTEM, NULL)
+	PHP_INI_ENTRY("curl_winssl.http_ssl_backend", "", PHP_INI_SYSTEM, NULL)
 PHP_INI_END()
 /* }}} */
 
@@ -642,6 +643,8 @@ PHP_MINFO_FUNCTION(curl_winssl)
  */
 PHP_MINIT_FUNCTION(curl_winssl)
 {
+	const curl_ssl_backend **backends;
+	char *http_ssl_backend;
 	le_curl_winssl = zend_register_list_destructors_ex(_php_curl_winssl_close, NULL, "curl", module_number);
 	le_curl_winssl_multi_handle = zend_register_list_destructors_ex(_php_curl_winssl_multi_close, NULL, "curl_winssl_multi", module_number);
 	le_curl_winssl_share_handle = zend_register_list_destructors_ex(_php_curl_winssl_share_close, NULL, "curl_share", module_number);
@@ -1378,6 +1381,28 @@ PHP_MINIT_FUNCTION(curl_winssl)
 #ifdef PHP_CURL_NEED_GNUTLS_TSL
 	gcry_control(GCRYCTL_SET_THREAD_CBS, &php_curl_winssl_gnutls_tsl);
 #endif
+
+	http_ssl_backend = INI_STR("curl_winssl.http_ssl_backend");
+	// INI_STR returns char * (NULL terminated)
+	if (http_ssl_backend && http_ssl_backend[0] == '\0') {
+		/* default winssl */
+		http_ssl_backend = "Schannel\0";
+	}
+	if (http_ssl_backend && http_ssl_backend[0] != '\0') {
+		switch (curl_global_sslset(-1, http_ssl_backend, &backends)) {
+		case CURLSSLSET_UNKNOWN_BACKEND:
+			php_error_docref(NULL, E_ERROR, "Unknown backend '%s'", http_ssl_backend);
+			return FAILURE;
+		case CURLSSLSET_NO_BACKENDS:
+			php_error_docref(NULL, E_ERROR, "cURL was built without SSL backends");
+			return FAILURE;
+		case CURLSSLSET_TOO_LATE:
+			php_error_docref(NULL, E_ERROR, "SSL backend already set");
+			return FAILURE;
+		case CURLSSLSET_OK:
+			break; /* Okay! */
+		}
+	}
 
 	if (curl_global_init(CURL_GLOBAL_DEFAULT) != CURLE_OK) {
 		return FAILURE;
