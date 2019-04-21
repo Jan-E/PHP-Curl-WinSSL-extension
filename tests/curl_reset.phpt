@@ -1,8 +1,8 @@
 --TEST--
-Test curl_reset
+Test curl_winssl_reset
 --SKIPIF--
-<?php if (!extension_loaded("curl")) print "skip";
-if (!function_exists("curl_reset")) exit("skip curl_reset doesn't exists (require libcurl >= 7.12.1)");
+<?php if (!extension_loaded("curl_winssl")) print "skip";
+if (!function_exists("curl_winssl_reset")) exit("skip curl_winssl_reset doesn't exists (require libcurl >= 7.12.1)");
 ?>
 --FILE--
 <?php
@@ -16,16 +16,16 @@ fclose($fp);
 
 $testfile_fp = fopen($test_file, 'w+');
 
-$ch = curl_init();
-curl_setopt($ch, CURLOPT_FILE, $testfile_fp);
-curl_setopt($ch, CURLOPT_URL, 'file://' . $log_file);
-curl_exec($ch);
+$ch = curl_winssl_init();
+curl_winssl_setopt($ch, CURLOPT_FILE, $testfile_fp);
+curl_winssl_setopt($ch, CURLOPT_URL, 'file://' . $log_file);
+curl_winssl_exec($ch);
 
-curl_reset($ch);
-curl_setopt($ch, CURLOPT_URL, 'file://' . $log_file);
-curl_exec($ch);
+curl_winssl_reset($ch);
+curl_winssl_setopt($ch, CURLOPT_URL, 'file://' . $log_file);
+curl_winssl_exec($ch);
 
-curl_close($ch);
+curl_winssl_close($ch);
 
 fclose($testfile_fp);
 
