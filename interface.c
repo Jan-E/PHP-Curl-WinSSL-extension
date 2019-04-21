@@ -476,6 +476,9 @@ const zend_function_entry curl_winssl_functions[] = {
 /* }}} */
 
 static zend_module_dep curl_winssl_module_deps[] = {
+#if HAVE_CURL
+	ZEND_MOD_REQUIRED("curl")
+#endif
 	{NULL, NULL, NULL, 0}
 };
 
@@ -637,7 +640,11 @@ PHP_MINFO_FUNCTION(curl_winssl)
 }
 /* }}} */
 
+#if HAVE_CURL
+#define REGISTER_CURL_CONSTANT(__c)
+#else
 #define REGISTER_CURL_CONSTANT(__c) REGISTER_LONG_CONSTANT(#__c, __c, CONST_CS | CONST_PERSISTENT)
+#endif
 
 /* {{{ PHP_MINIT_FUNCTION
  */
