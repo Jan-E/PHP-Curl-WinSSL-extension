@@ -24,12 +24,12 @@
 
 #include "php.h"
 #include "Zend/zend_exceptions.h"
-#include "php_curl.h"
-#if HAVE_CURL
+#include "php_curl_winssl.h"
+#if HAVE_CURL_WINSSL
 
-PHP_CURL_API zend_class_entry *curl_CURLFile_class;
+PHP_CURL_WINSSL_API zend_class_entry *curl_CURL_WINSSLFile_class;
 
-static void curlfile_ctor(INTERNAL_FUNCTION_PARAMETERS)
+static void curl_winsslfile_ctor(INTERNAL_FUNCTION_PARAMETERS)
 {
 	char *fname = NULL, *mime = NULL, *postname = NULL;
 	size_t fname_len, mime_len, postname_len;
@@ -40,49 +40,49 @@ static void curlfile_ctor(INTERNAL_FUNCTION_PARAMETERS)
 	}
 
 	if (fname) {
-		zend_update_property_string(curl_CURLFile_class, cf, "name", sizeof("name")-1, fname);
+		zend_update_property_string(curl_CURL_WINSSLFile_class, cf, "name", sizeof("name")-1, fname);
 	}
 
 	if (mime) {
-		zend_update_property_string(curl_CURLFile_class, cf, "mime", sizeof("mime")-1, mime);
+		zend_update_property_string(curl_CURL_WINSSLFile_class, cf, "mime", sizeof("mime")-1, mime);
 	}
 
 	if (postname) {
-		zend_update_property_string(curl_CURLFile_class, cf, "postname", sizeof("postname")-1, postname);
+		zend_update_property_string(curl_CURL_WINSSLFile_class, cf, "postname", sizeof("postname")-1, postname);
 	}
 }
 
-/* {{{ proto void CURLFile::__construct(string $name, [string $mimetype [, string $postfilename]])
-   Create the CURLFile object */
-ZEND_METHOD(CURLFile, __construct)
+/* {{{ proto void CURL_WINSSLFile::__construct(string $name, [string $mimetype [, string $postfilename]])
+   Create the CURL_WINSSLFile object */
+ZEND_METHOD(CURL_WINSSLFile, __construct)
 {
 	return_value = getThis();
-	curlfile_ctor(INTERNAL_FUNCTION_PARAM_PASSTHRU);
+	curl_winsslfile_ctor(INTERNAL_FUNCTION_PARAM_PASSTHRU);
 }
 /* }}} */
 
-/* {{{ proto CURLFile curl_file_create(string $name, [string $mimetype [, string $postfilename]])
-   Create the CURLFile object */
-PHP_FUNCTION(curl_file_create)
+/* {{{ proto CURL_WINSSLFile curl_winssl_file_create(string $name, [string $mimetype [, string $postfilename]])
+   Create the CURL_WINSSLFile object */
+PHP_FUNCTION(curl_winssl_file_create)
 {
-    object_init_ex( return_value, curl_CURLFile_class );
-    curlfile_ctor(INTERNAL_FUNCTION_PARAM_PASSTHRU);
+    object_init_ex( return_value, curl_CURL_WINSSLFile_class );
+    curl_winsslfile_ctor(INTERNAL_FUNCTION_PARAM_PASSTHRU);
 }
 /* }}} */
 
-static void curlfile_get_property(char *name, INTERNAL_FUNCTION_PARAMETERS)
+static void curl_winsslfile_get_property(char *name, INTERNAL_FUNCTION_PARAMETERS)
 {
 	zval *res, rv;
 
 	if (zend_parse_parameters_none() == FAILURE) {
 		return;
 	}
-	res = zend_read_property(curl_CURLFile_class, getThis(), name, strlen(name), 1, &rv);
+	res = zend_read_property(curl_CURL_WINSSLFile_class, getThis(), name, strlen(name), 1, &rv);
 	ZVAL_DEREF(res);
 	ZVAL_COPY(return_value, res);
 }
 
-static void curlfile_set_property(char *name, INTERNAL_FUNCTION_PARAMETERS)
+static void curl_winsslfile_set_property(char *name, INTERNAL_FUNCTION_PARAMETERS)
 {
 	char *arg = NULL;
 	size_t arg_len;
@@ -90,89 +90,89 @@ static void curlfile_set_property(char *name, INTERNAL_FUNCTION_PARAMETERS)
 	if (zend_parse_parameters(ZEND_NUM_ARGS(), "s", &arg, &arg_len) == FAILURE) {
 		return;
 	}
-	zend_update_property_string(curl_CURLFile_class, getThis(), name, strlen(name), arg);
+	zend_update_property_string(curl_CURL_WINSSLFile_class, getThis(), name, strlen(name), arg);
 }
 
-/* {{{ proto string CURLFile::getFilename()
+/* {{{ proto string CURL_WINSSLFile::getFilename()
    Get file name */
-ZEND_METHOD(CURLFile, getFilename)
+ZEND_METHOD(CURL_WINSSLFile, getFilename)
 {
-	curlfile_get_property("name", INTERNAL_FUNCTION_PARAM_PASSTHRU);
+	curl_winsslfile_get_property("name", INTERNAL_FUNCTION_PARAM_PASSTHRU);
 }
 /* }}} */
 
-/* {{{ proto string CURLFile::getMimeType()
+/* {{{ proto string CURL_WINSSLFile::getMimeType()
    Get MIME type */
-ZEND_METHOD(CURLFile, getMimeType)
+ZEND_METHOD(CURL_WINSSLFile, getMimeType)
 {
-	curlfile_get_property("mime", INTERNAL_FUNCTION_PARAM_PASSTHRU);
+	curl_winsslfile_get_property("mime", INTERNAL_FUNCTION_PARAM_PASSTHRU);
 }
 /* }}} */
 
-/* {{{ proto string CURLFile::getPostFilename()
+/* {{{ proto string CURL_WINSSLFile::getPostFilename()
    Get file name for POST */
-ZEND_METHOD(CURLFile, getPostFilename)
+ZEND_METHOD(CURL_WINSSLFile, getPostFilename)
 {
-	curlfile_get_property("postname", INTERNAL_FUNCTION_PARAM_PASSTHRU);
+	curl_winsslfile_get_property("postname", INTERNAL_FUNCTION_PARAM_PASSTHRU);
 }
 /* }}} */
 
-/* {{{ proto void CURLFile::setMimeType(string $mime)
+/* {{{ proto void CURL_WINSSLFile::setMimeType(string $mime)
    Set MIME type */
-ZEND_METHOD(CURLFile, setMimeType)
+ZEND_METHOD(CURL_WINSSLFile, setMimeType)
 {
-	curlfile_set_property("mime", INTERNAL_FUNCTION_PARAM_PASSTHRU);
+	curl_winsslfile_set_property("mime", INTERNAL_FUNCTION_PARAM_PASSTHRU);
 }
 /* }}} */
 
-/* {{{ proto void CURLFile::setPostFilename(string $name)
+/* {{{ proto void CURL_WINSSLFile::setPostFilename(string $name)
    Set file name for POST */
-ZEND_METHOD(CURLFile, setPostFilename)
+ZEND_METHOD(CURL_WINSSLFile, setPostFilename)
 {
-	curlfile_set_property("postname", INTERNAL_FUNCTION_PARAM_PASSTHRU);
+	curl_winsslfile_set_property("postname", INTERNAL_FUNCTION_PARAM_PASSTHRU);
 }
 /* }}} */
 
-/* {{{ proto void CURLFile::__wakeup()
+/* {{{ proto void CURL_WINSSLFile::__wakeup()
    Unserialization handler */
-ZEND_METHOD(CURLFile, __wakeup)
+ZEND_METHOD(CURL_WINSSLFile, __wakeup)
 {
-	zend_unset_property(curl_CURLFile_class, getThis(), "name", sizeof("name")-1);
-	zend_update_property_string(curl_CURLFile_class, getThis(), "name", sizeof("name")-1, "");
-	zend_throw_exception(NULL, "Unserialization of CURLFile instances is not allowed", 0);
+	zend_unset_property(curl_CURL_WINSSLFile_class, getThis(), "name", sizeof("name")-1);
+	zend_update_property_string(curl_CURL_WINSSLFile_class, getThis(), "name", sizeof("name")-1, "");
+	zend_throw_exception(NULL, "Unserialization of CURL_WINSSLFile instances is not allowed", 0);
 }
 /* }}} */
 
-ZEND_BEGIN_ARG_INFO_EX(arginfo_curlfile_create, 0, 0, 1)
+ZEND_BEGIN_ARG_INFO_EX(arginfo_curl_winsslfile_create, 0, 0, 1)
 	ZEND_ARG_INFO(0, filename)
 	ZEND_ARG_INFO(0, mimetype)
 	ZEND_ARG_INFO(0, postname)
 ZEND_END_ARG_INFO()
 
-ZEND_BEGIN_ARG_INFO(arginfo_curlfile_name, 0)
+ZEND_BEGIN_ARG_INFO(arginfo_curl_winsslfile_name, 0)
 	ZEND_ARG_INFO(0, name)
 ZEND_END_ARG_INFO()
 
 
-static const zend_function_entry curlfile_funcs[] = {
-	PHP_ME(CURLFile,			__construct,        arginfo_curlfile_create, ZEND_ACC_CTOR|ZEND_ACC_PUBLIC)
-	PHP_ME(CURLFile,			getFilename,        NULL, ZEND_ACC_PUBLIC)
-	PHP_ME(CURLFile,			getMimeType,        NULL, ZEND_ACC_PUBLIC)
-	PHP_ME(CURLFile,			setMimeType,        arginfo_curlfile_name, ZEND_ACC_PUBLIC)
-	PHP_ME(CURLFile,			getPostFilename,    NULL, ZEND_ACC_PUBLIC)
-	PHP_ME(CURLFile,			setPostFilename,    arginfo_curlfile_name, ZEND_ACC_PUBLIC)
-	PHP_ME(CURLFile,            __wakeup,           NULL, ZEND_ACC_PUBLIC)
+static const zend_function_entry curl_winsslfile_funcs[] = {
+	PHP_ME(CURL_WINSSLFile,	__construct,        arginfo_curl_winsslfile_create, ZEND_ACC_CTOR|ZEND_ACC_PUBLIC)
+	PHP_ME(CURL_WINSSLFile,	getFilename,        NULL, ZEND_ACC_PUBLIC)
+	PHP_ME(CURL_WINSSLFile,	getMimeType,        NULL, ZEND_ACC_PUBLIC)
+	PHP_ME(CURL_WINSSLFile,	setMimeType,        arginfo_curl_winsslfile_name, ZEND_ACC_PUBLIC)
+	PHP_ME(CURL_WINSSLFile,	getPostFilename,    NULL, ZEND_ACC_PUBLIC)
+	PHP_ME(CURL_WINSSLFile,	setPostFilename,    arginfo_curl_winsslfile_name, ZEND_ACC_PUBLIC)
+	PHP_ME(CURL_WINSSLFile,	__wakeup,           NULL, ZEND_ACC_PUBLIC)
 	PHP_FE_END
 };
 
-void curlfile_register_class(void)
+void curl_winsslfile_register_class(void)
 {
 	zend_class_entry ce;
-	INIT_CLASS_ENTRY( ce, "CURLFile", curlfile_funcs );
-	curl_CURLFile_class = zend_register_internal_class(&ce);
-	zend_declare_property_string(curl_CURLFile_class, "name", sizeof("name")-1, "", ZEND_ACC_PUBLIC);
-	zend_declare_property_string(curl_CURLFile_class, "mime", sizeof("mime")-1, "", ZEND_ACC_PUBLIC);
-	zend_declare_property_string(curl_CURLFile_class, "postname", sizeof("postname")-1, "", ZEND_ACC_PUBLIC);
+	INIT_CLASS_ENTRY( ce, "CURL_WINSSLFile", curl_winsslfile_funcs );
+	curl_CURL_WINSSLFile_class = zend_register_internal_class(&ce);
+	zend_declare_property_string(curl_CURL_WINSSLFile_class, "name", sizeof("name")-1, "", ZEND_ACC_PUBLIC);
+	zend_declare_property_string(curl_CURL_WINSSLFile_class, "mime", sizeof("mime")-1, "", ZEND_ACC_PUBLIC);
+	zend_declare_property_string(curl_CURL_WINSSLFile_class, "postname", sizeof("postname")-1, "", ZEND_ACC_PUBLIC);
 }
 
 #endif

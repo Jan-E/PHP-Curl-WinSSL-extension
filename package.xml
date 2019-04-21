@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="ISO-8859-1" ?>
 <!DOCTYPE package SYSTEM "../pear/package.dtd">
 <package>
- <name>curl</name>
+ <name>curl_winssl</name>
  <summary>Clib PDF functions</summary>
  <maintainers>
   <maintainer>
@@ -29,18 +29,14 @@ upload, proxies, cookies, and user+password authentication.
   <notes>
 package.xml added to support installation using pear installer
   </notes>
-  <configureoptions>
-    <configureoption name="with-curl" default="autodetect" prompt="path to curl installation?"/>
-  </configureoptions>
   <filelist>
    <file role="doc" name="CREDITS"/>
-   <file role="src" name="config.m4"/>
    <file role="src" name="config.w32"/>
    <file role="src" name="interface.c"/>
    <file role="src" name="multi.c"/>
    <file role="src" name="share.c"/>
    <file role="src" name="streams.c"/>
-   <file role="src" name="php_curl.h"/>
+   <file role="src" name="php_curl_winssl.h"/>
   </filelist>
   <deps>
    <dep type="php" rel="ge" version="5" />

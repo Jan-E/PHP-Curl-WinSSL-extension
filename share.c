@@ -26,42 +26,42 @@
 
 #include "php.h"
 
-#if HAVE_CURL
+#if HAVE_CURL_WINSSL
 
-#include "php_curl.h"
+#include "php_curl_winssl.h"
 
 #include <curl/curl.h>
 
-/* {{{ proto void curl_share_init()
+/* {{{ proto void curl_winssl_share_init()
    Initialize a share curl handle */
-PHP_FUNCTION(curl_share_init)
+PHP_FUNCTION(curl_winssl_share_init)
 {
-	php_curlsh *sh;
+	php_curl_winsslsh *sh;
 
 	if (zend_parse_parameters_none() == FAILURE) {
 		return;
 	}
 
-	sh = ecalloc(1, sizeof(php_curlsh));
+	sh = ecalloc(1, sizeof(php_curl_winsslsh));
 
 	sh->share = curl_share_init();
 
-	RETURN_RES(zend_register_resource(sh, le_curl_share_handle));
+	RETURN_RES(zend_register_resource(sh, le_curl_winssl_share_handle));
 }
 /* }}} */
 
-/* {{{ proto void curl_share_close(resource sh)
+/* {{{ proto void curl_winssl_share_close(resource sh)
    Close a set of cURL handles */
-PHP_FUNCTION(curl_share_close)
+PHP_FUNCTION(curl_winssl_share_close)
 {
 	zval *z_sh;
-	php_curlsh *sh;
+	php_curl_winsslsh *sh;
 
 	if (zend_parse_parameters(ZEND_NUM_ARGS(), "r", &z_sh) == FAILURE) {
 		return;
 	}
 
-	if ((sh = (php_curlsh *)zend_fetch_resource(Z_RES_P(z_sh), le_curl_share_handle_name, le_curl_share_handle)) == NULL) {
+	if ((sh = (php_curl_winsslsh *)zend_fetch_resource(Z_RES_P(z_sh), le_curl_winssl_share_handle_name, le_curl_winssl_share_handle)) == NULL) {
 		RETURN_FALSE;
 	}
 
@@ -69,7 +69,7 @@ PHP_FUNCTION(curl_share_close)
 }
 /* }}} */
 
-static int _php_curl_share_setopt(php_curlsh *sh, zend_long option, zval *zvalue, zval *return_value) /* {{{ */
+static int _php_curl_winssl_share_setopt(php_curl_winsslsh *sh, zend_long option, zval *zvalue, zval *return_value) /* {{{ */
 {
 	CURLSHcode error = CURLSHE_OK;
 
@@ -93,23 +93,23 @@ static int _php_curl_share_setopt(php_curlsh *sh, zend_long option, zval *zvalue
 }
 /* }}} */
 
-/* {{{ proto bool curl_share_setopt(resource sh, int option, mixed value)
+/* {{{ proto bool curl_winssl_share_setopt(resource sh, int option, mixed value)
       Set an option for a cURL transfer */
-PHP_FUNCTION(curl_share_setopt)
+PHP_FUNCTION(curl_winssl_share_setopt)
 {
 	zval       *zid, *zvalue;
 	zend_long        options;
-	php_curlsh *sh;
+	php_curl_winsslsh *sh;
 
 	if (zend_parse_parameters(ZEND_NUM_ARGS(), "rlz", &zid, &options, &zvalue) == FAILURE) {
 		return;
 	}
 
-	if ((sh = (php_curlsh *)zend_fetch_resource(Z_RES_P(zid), le_curl_share_handle_name, le_curl_share_handle)) == NULL) {
+	if ((sh = (php_curl_winsslsh *)zend_fetch_resource(Z_RES_P(zid), le_curl_winssl_share_handle_name, le_curl_winssl_share_handle)) == NULL) {
 		RETURN_FALSE;
 	}
 
-	if (!_php_curl_share_setopt(sh, options, zvalue, return_value)) {
+	if (!_php_curl_winssl_share_setopt(sh, options, zvalue, return_value)) {
 		RETURN_TRUE;
 	} else {
 		RETURN_FALSE;
@@ -117,9 +117,9 @@ PHP_FUNCTION(curl_share_setopt)
 }
 /* }}} */
 
-void _php_curl_share_close(zend_resource *rsrc) /* {{{ */
+void _php_curl_winssl_share_close(zend_resource *rsrc) /* {{{ */
 {
-	php_curlsh *sh = (php_curlsh *)rsrc->ptr;
+	php_curl_winsslsh *sh = (php_curl_winsslsh *)rsrc->ptr;
 	if (sh) {
 		curl_share_cleanup(sh->share);
 		efree(sh);

@@ -1,26 +1,26 @@
 // $Id$
 // vim:ft=javascript
 
-ARG_WITH("curl", "cURL support", "no");
+ARG_WITH("curl_winssl", "cURL WinSSL support", "no");
 
-if (PHP_CURL != "no") {
-	if (CHECK_LIB("libcurl_a.lib;libcurl.lib", "curl", PHP_CURL) &&
-			CHECK_HEADER_ADD_INCLUDE("curl/easy.h", "CFLAGS_CURL") &&
-			CHECK_LIB("ssleay32.lib", "curl", PHP_CURL) &&
-			CHECK_LIB("libeay32.lib", "curl", PHP_CURL) 
-		&& CHECK_LIB("winmm.lib", "curl", PHP_CURL)
-		&& CHECK_LIB("wldap32.lib", "curl", PHP_CURL)
-		&& (((PHP_ZLIB=="no") && (CHECK_LIB("zlib_a.lib;zlib.lib", "curl", PHP_CURL))) || 
-			(PHP_ZLIB_SHARED && CHECK_LIB("zlib.lib", "curl", PHP_CURL)) || (PHP_ZLIB == "yes" && (!PHP_ZLIB_SHARED)))
+if (PHP_CURL_WINSSL != "no") {
+	if (CHECK_LIB("libcurl_a.lib;libcurl.lib", "curl_winssl", PHP_CURL_WINSSL) &&
+		CHECK_HEADER_ADD_INCLUDE("curl/easy.h", "CFLAGS_CURL_WINSSL") &&
+		(CHECK_LIB("ssleay32.lib", "curl_winssl", PHP_CURL_WINSSL) || CHECK_LIB("libssl.lib", "curl_winssl", PHP_CURL_WINSSL)) &&
+		(CHECK_LIB("libeay32.lib", "curl_winssl", PHP_CURL_WINSSL) || CHECK_LIB("libcrypto.lib", "curl_winssl", PHP_CURL_WINSSL)) &&
+		CHECK_LIB("winmm.lib", "curl_winssl", PHP_CURL_WINSSL) &&
+		CHECK_LIB("wldap32.lib", "curl_winssl", PHP_CURL_WINSSL) &&
+		(((PHP_ZLIB=="no") && (CHECK_LIB("zlib_a.lib;zlib.lib", "curl_winssl", PHP_CURL_WINSSL))) || 
+			(PHP_ZLIB_SHARED && CHECK_LIB("zlib.lib", "curl_winssl", PHP_CURL_WINSSL)) || (PHP_ZLIB == "yes" && (!PHP_ZLIB_SHARED)))
 		) {
-		EXTENSION("curl", "interface.c multi.c share.c curl_file.c");
-		AC_DEFINE('HAVE_CURL', 1, 'Have cURL library');
+		EXTENSION("curl_winssl", "interface.c multi.c share.c curl_file.c");
+		AC_DEFINE('HAVE_CURL_WINSSL', 1, 'Have WinSSL suppurt in cURL');
 		AC_DEFINE('HAVE_CURL_SSL', 1, 'Have SSL suppurt in cURL');
 		AC_DEFINE('HAVE_CURL_EASY_STRERROR', 1, 'Have curl_easy_strerror in cURL');
 		AC_DEFINE('HAVE_CURL_MULTI_STRERROR', 1, 'Have curl_multi_strerror in cURL');
 		ADD_FLAG("CFLAGS_CURL", "/D CURL_STATICLIB");
 		// TODO: check for curl_version_info
 	} else {
-		WARNING("curl not enabled; libraries and headers not found");
+		WARNING("curl_winssl not enabled; libraries and headers not found");
 	}
 }
