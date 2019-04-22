@@ -215,8 +215,8 @@ void _php_curl_winssl_multi_cleanup_list(void *data);
 void _php_curl_winssl_verify_handlers(php_curl_winssl *ch, int reporterror);
 void _php_setup_easy_copy_handlers(php_curl_winssl *ch, php_curl_winssl *source);
 
-void curlfile_register_class(void);
-PHP_CURL_WINSSL_API extern zend_class_entry *curl_CURLFile_class;
+void CurlWinSSLFile_register_class(void);
+PHP_CURL_WINSSL_API extern zend_class_entry *curl_CurlWinSSLFile_class;
 
 #else
 #define curl_module_ptr NULL

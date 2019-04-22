@@ -422,7 +422,7 @@ ZEND_BEGIN_ARG_INFO(arginfo_curl_winssl_pause, 0)
 ZEND_END_ARG_INFO()
 #endif
 
-ZEND_BEGIN_ARG_INFO_EX(arginfo_CURL_WINSSLFile_create, 0, 0, 1)
+ZEND_BEGIN_ARG_INFO_EX(arginfo_CurlWinSSLFile_create, 0, 0, 1)
 	ZEND_ARG_INFO(0, filename)
 	ZEND_ARG_INFO(0, mimetype)
 	ZEND_ARG_INFO(0, postname)
@@ -470,7 +470,7 @@ const zend_function_entry curl_winssl_functions[] = {
 	PHP_FE(curl_winssl_share_init,          arginfo_curl_share_init)
 	PHP_FE(curl_winssl_share_close,         arginfo_curl_share_close)
 	PHP_FE(curl_winssl_share_setopt,        arginfo_curl_share_setopt)
-	PHP_FE(curl_winssl_file_create,         arginfo_CURL_WINSSLFile_create)
+	PHP_FE(curl_winssl_file_create,         arginfo_CurlWinSSLFile_create)
 	PHP_FE_END
 };
 /* }}} */
@@ -1491,7 +1491,7 @@ PHP_MINIT_FUNCTION(curl_winssl)
 		return FAILURE;
 	}
 
-	curlfile_register_class();
+	CurlWinSSLFile_register_class();
 
 	return SUCCESS;
 }
@@ -2891,12 +2891,12 @@ static int _php_curl_winssl_setopt(php_curl_winssl *ch, zend_long option, zval *
 
 					ZVAL_DEREF(current);
 					if (Z_TYPE_P(current) == IS_OBJECT &&
-							instanceof_function(Z_OBJCE_P(current), curl_CURLFile_class)) {
+							instanceof_function(Z_OBJCE_P(current), curl_CurlWinSSLFile_class)) {
 						/* new-style file upload */
 						zval *prop, rv;
 						char *type = NULL, *filename = NULL;
 
-						prop = zend_read_property(curl_CURLFile_class, current, "name", sizeof("name")-1, 0, &rv);
+						prop = zend_read_property(curl_CurlWinSSLFile_class, current, "name", sizeof("name")-1, 0, &rv);
 						if (Z_TYPE_P(prop) != IS_STRING) {
 							php_error_docref(NULL, E_WARNING, "Invalid filename for key %s", ZSTR_VAL(string_key));
 						} else {
@@ -2906,11 +2906,11 @@ static int _php_curl_winssl_setopt(php_curl_winssl *ch, zend_long option, zval *
 								return 1;
 							}
 
-							prop = zend_read_property(curl_CURLFile_class, current, "mime", sizeof("mime")-1, 0, &rv);
+							prop = zend_read_property(curl_CurlWinSSLFile_class, current, "mime", sizeof("mime")-1, 0, &rv);
 							if (Z_TYPE_P(prop) == IS_STRING && Z_STRLEN_P(prop) > 0) {
 								type = Z_STRVAL_P(prop);
 							}
-							prop = zend_read_property(curl_CURLFile_class, current, "postname", sizeof("postname")-1, 0, &rv);
+							prop = zend_read_property(curl_CurlWinSSLFile_class, current, "postname", sizeof("postname")-1, 0, &rv);
 							if (Z_TYPE_P(prop) == IS_STRING && Z_STRLEN_P(prop) > 0) {
 								filename = Z_STRVAL_P(prop);
 							}
@@ -3227,6 +3227,7 @@ PHP_FUNCTION(curl_winssl_exec)
 	SAVE_CURL_WINSSL_ERROR(ch, error);
 	/* CURLE_PARTIAL_FILE is returned by HEAD requests */
 	if (error != CURLE_OK && error != CURLE_PARTIAL_FILE) {
+		php_error_docref(NULL, E_WARNING, "curl_winssl_exec error %i", error);
 		smart_str_free(&ch->handlers->write->buf);
 		RETURN_FALSE;
 	}
@@ -3257,6 +3258,7 @@ PHP_FUNCTION(curl_winssl_exec)
 	} else {
 		RETURN_TRUE;
 	}
+
 }
 /* }}} */
 
