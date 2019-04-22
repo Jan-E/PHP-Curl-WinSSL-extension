@@ -25,12 +25,8 @@ function testcurl($ch, $name, $mime = '', $postname = '')
 	}
 }
 
-define ("PHP_CURL_SERVER_HOSTNAME", "localhost");
-define ("PHP_CURL_SERVER_PORT", 80);
-define ("PHP_CURL_SERVER_ADDRESS", PHP_CURL_SERVER_HOSTNAME.":".PHP_CURL_SERVER_PORT);
-$host  = PHP_CURL_SERVER_ADDRESS;;
-//include 'server.inc';
-//$host = curl_cli_server_start();
+include 'server.inc';
+$host = curl_cli_server_start();
 
 $ch = curl_winssl_init();
 curl_winssl_setopt($ch, CURLOPT_URL, "{$host}/get.php?test=file");

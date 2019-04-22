@@ -3227,7 +3227,7 @@ PHP_FUNCTION(curl_winssl_exec)
 	SAVE_CURL_WINSSL_ERROR(ch, error);
 	/* CURLE_PARTIAL_FILE is returned by HEAD requests */
 	if (error != CURLE_OK && error != CURLE_PARTIAL_FILE) {
-		php_error_docref(NULL, E_WARNING, "curl_winssl_exec error %i", error);
+		//php_error_docref(NULL, E_WARNING, "curl_winssl_exec error %i", error);
 		smart_str_free(&ch->handlers->write->buf);
 		RETURN_FALSE;
 	}
