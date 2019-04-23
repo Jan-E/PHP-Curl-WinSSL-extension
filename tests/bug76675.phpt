@@ -1,5 +1,5 @@
 --TEST--
-Bug #76675 (Segfault with H2 server push write/writeheader handlers)
+Bug #76675 (H2 server push write/writeheader handlers)
 --SKIPIF--
 <?php
 include 'skipif.inc';
@@ -19,8 +19,8 @@ $callback = function($parent, $passed) use (&$transfers) {
         echo "Received ".strlen($data);
         return strlen($data);
     });
-	$transfers++;
-	return CURL_PUSH_OK;
+    $transfers++;
+    return CURL_PUSH_OK;
 };
 $mh = curl_winssl_multi_init();
 curl_winssl_multi_setopt($mh, CURLMOPT_PIPELINING, CURLPIPE_MULTIPLEX);

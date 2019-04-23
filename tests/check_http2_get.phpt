@@ -33,7 +33,7 @@ $result = getSslHeader('https://nghttp2.org/');
 if (stripos($result, 'HTTP/2 200') === false) {
 	echo $result;
 } else {
-	echo "HTTP/2 200";
+	echo "HTTP/2 200\n";
 }
 ?>
 DONE
