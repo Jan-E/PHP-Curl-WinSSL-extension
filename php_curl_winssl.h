@@ -49,7 +49,7 @@
 #include <curl/multi.h>
 
 extern zend_module_entry curl_winssl_module_entry;
-#define curl_module_ptr &curl_winssl_module_entry
+#define curl_winssl_module_ptr &curl_winssl_module_entry
 
 #define CURLOPT_RETURNTRANSFER 19913
 #define CURLOPT_BINARYTRANSFER 19914 /* For Backward compatibility */
@@ -219,7 +219,7 @@ void CurlWinSSLFile_register_class(void);
 PHP_CURL_WINSSL_API extern zend_class_entry *curl_CurlWinSSLFile_class;
 
 #else
-#define curl_module_ptr NULL
+#define curl_winssl_module_ptr NULL
 #endif /* HAVE_CURL_WINSSL */
-#define phpext_curl_ptr curl_module_ptr
+#define phpext_curl_winssl_ptr curl_winssl_module_ptr
 #endif  /* _PHP_CURL_H */
