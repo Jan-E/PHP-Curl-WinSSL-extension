@@ -209,11 +209,11 @@ typedef struct {
 	} err;
 } php_curl_winsslsh;
 
-php_curl_winssl *alloc_curl_handle();
+php_curl_winssl *alloc_curl_winssl_handle();
 void _php_curl_winssl_cleanup_handle(php_curl_winssl *);
 void _php_curl_winssl_multi_cleanup_list(void *data);
 void _php_curl_winssl_verify_handlers(php_curl_winssl *ch, int reporterror);
-void _php_setup_easy_copy_handlers(php_curl_winssl *ch, php_curl_winssl *source);
+void _php_setup_winssl_easy_copy_handlers(php_curl_winssl *ch, php_curl_winssl *source);
 
 void CurlWinSSLFile_register_class(void);
 PHP_CURL_WINSSL_API extern zend_class_entry *curl_CurlWinSSLFile_class;

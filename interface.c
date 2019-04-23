@@ -1983,9 +1983,9 @@ PHP_FUNCTION(curl_winssl_version)
 }
 /* }}} */
 
-/* {{{ alloc_curl_handle
+/* {{{ alloc_curl_winssl_handle
  */
-php_curl_winssl *alloc_curl_handle()
+php_curl_winssl *alloc_curl_winssl_handle()
 {
 	php_curl_winssl *ch        = ecalloc(1, sizeof(php_curl_winssl));
 	ch->to_free                = ecalloc(1, sizeof(struct _php_curl_winssl_free));
@@ -2102,7 +2102,7 @@ PHP_FUNCTION(curl_winssl_init)
 		RETURN_FALSE;
 	}
 
-	ch = alloc_curl_handle();
+	ch = alloc_curl_winssl_handle();
 
 	ch->cp = cp;
 
@@ -2124,7 +2124,7 @@ PHP_FUNCTION(curl_winssl_init)
 }
 /* }}} */
 
-void _php_setup_easy_copy_handlers(php_curl_winssl *ch, php_curl_winssl *source)
+void _php_setup_winssl_easy_copy_handlers(php_curl_winssl *ch, php_curl_winssl *source)
 {
 	if (!Z_ISUNDEF(source->handlers->write->stream)) {
 		Z_ADDREF(source->handlers->write->stream);
@@ -2219,7 +2219,7 @@ PHP_FUNCTION(curl_winssl_copy_handle)
 		RETURN_FALSE;
 	}
 
-	dupch = alloc_curl_handle();
+	dupch = alloc_curl_winssl_handle();
 
 	dupch->cp = cp;
 	Z_ADDREF_P(zid);

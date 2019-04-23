@@ -460,9 +460,9 @@ static int _php_server_push_callback(CURL *parent_ch, CURL *easy, size_t num_hea
 
 	parent = (php_curl_winssl*)zend_fetch_resource(Z_RES_P(pz_parent_ch), le_curl_winssl_name, le_curl_winssl);
 
-	ch = alloc_curl_handle();
+	ch = alloc_curl_winssl_handle();
 	ch->cp = easy;
-	_php_setup_easy_copy_handlers(ch, parent);
+	_php_setup_winssl_easy_copy_handlers(ch, parent);
 
 	Z_ADDREF_P(pz_parent_ch);
 
