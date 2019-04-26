@@ -1,5 +1,5 @@
 --TEST--
-Bug #76675 (H2 server push write/writeheader handlers)
+Bug #76675 (H2 server push write/writeheader handlers / pipelining)
 --SKIPIF--
 <?php
 include 'skipif.inc';
