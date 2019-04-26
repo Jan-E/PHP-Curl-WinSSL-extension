@@ -1,5 +1,5 @@
 --TEST--
-Check http2 connnextions with winssl
+Check http2 connection with winssl
 --SKIPIF--
 <?php 
 if (!extension_loaded("curl_winssl")) {
