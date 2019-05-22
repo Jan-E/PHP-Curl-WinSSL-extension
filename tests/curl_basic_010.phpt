@@ -1,5 +1,5 @@
 --TEST--
-Test curl_error() & curl_errno() function with problematic proxy
+Test curl_winssl_error() & curl_winssl_errno() function with problematic proxy
 --CREDITS--
 TestFest 2009 - AFUP - Perrick Penet <perrick@noparking.net>
 --SKIPIF--
@@ -14,14 +14,14 @@ TestFest 2009 - AFUP - Perrick Penet <perrick@noparking.net>
 <?php
 
 $url = "http://www.example.org";
-$ch = curl_init();
-curl_setopt($ch, CURLOPT_PROXY, uniqid().":".uniqid());
-curl_setopt($ch, CURLOPT_URL, $url);
+$ch = curl_winssl_init();
+curl_winssl_setopt($ch, CURLOPT_PROXY, uniqid().":".uniqid());
+curl_winssl_setopt($ch, CURLOPT_URL, $url);
 
-curl_exec($ch);
-var_dump(curl_error($ch));
-var_dump(curl_errno($ch));
-curl_close($ch);
+curl_winssl_exec($ch);
+var_dump(curl_winssl_error($ch));
+var_dump(curl_winssl_errno($ch));
+curl_winssl_close($ch);
 
 
 ?>
