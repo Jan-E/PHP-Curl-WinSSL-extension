@@ -25,6 +25,9 @@
 #include "php.h"
 #include "Zend/zend_exceptions.h"
 #include "php_curl_winssl.h"
+#if PHP_MAJOR_VERSION >= 8
+#include "curl_winssl_file_arginfo.h"
+#endif
 #if HAVE_CURL_WINSSL
 
 PHP_CURL_WINSSL_API zend_class_entry *curl_CurlWinSSLFile_class;
@@ -155,6 +158,16 @@ ZEND_END_ARG_INFO()
 
 
 static const zend_function_entry curl_winssl_file_funcs[] = {
+#if PHP_MAJOR_VERSION >= 8
+	PHP_ME(CurlWinSSLFile,	__construct,        arginfo_curl_winssl_file_create, ZEND_ACC_CTOR|ZEND_ACC_PUBLIC)
+	PHP_ME(CurlWinSSLFile,	getFilename,        arginfo_class_CURLFile_getFilename, ZEND_ACC_PUBLIC)
+	PHP_ME(CurlWinSSLFile,	getMimeType,        arginfo_class_CURLFile_getMimeType, ZEND_ACC_PUBLIC)
+	PHP_ME(CurlWinSSLFile,	setMimeType,        arginfo_curl_winssl_file_name, ZEND_ACC_PUBLIC)
+	PHP_ME(CurlWinSSLFile,	getPostFilename,    arginfo_class_CURLFile_getPostFilename, ZEND_ACC_PUBLIC)
+	PHP_ME(CurlWinSSLFile,	setPostFilename,    arginfo_curl_winssl_file_name, ZEND_ACC_PUBLIC)
+	PHP_ME(CurlWinSSLFile,	__wakeup,           arginfo_class_CURLFile___wakeup, ZEND_ACC_PUBLIC)
+	PHP_FE_END
+#else
 	PHP_ME(CurlWinSSLFile,	__construct,        arginfo_curl_winssl_file_create, ZEND_ACC_CTOR|ZEND_ACC_PUBLIC)
 	PHP_ME(CurlWinSSLFile,	getFilename,        NULL, ZEND_ACC_PUBLIC)
 	PHP_ME(CurlWinSSLFile,	getMimeType,        NULL, ZEND_ACC_PUBLIC)
@@ -163,6 +176,7 @@ static const zend_function_entry curl_winssl_file_funcs[] = {
 	PHP_ME(CurlWinSSLFile,	setPostFilename,    arginfo_curl_winssl_file_name, ZEND_ACC_PUBLIC)
 	PHP_ME(CurlWinSSLFile,	__wakeup,           NULL, ZEND_ACC_PUBLIC)
 	PHP_FE_END
+#endif
 };
 
 void CurlWinSSLFile_register_class(void)
