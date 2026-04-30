@@ -28,6 +28,9 @@ if (PHP_CURL_WINSSL != "no") {
 			CHECK_LIB("nghttp2.lib", "curl_winssl", PHP_CURL_WINSSL) &&
 			CHECK_LIB("crypt32.lib", "curl_winssl", PHP_CURL_WINSSL))
 		) {
+		CHECK_LIB("brotlidec-static.lib", "curl_winssl", PHP_CURL_WINSSL);
+		CHECK_LIB("brotlicommon-static.lib", "curl_winssl", PHP_CURL_WINSSL);
+		CHECK_LIB("libzstd.lib", "curl_winssl", PHP_CURL_WINSSL);
 		EXTENSION("curl_winssl", "interface.c multi.c share.c curl_file.c");
 		AC_DEFINE('HAVE_CURL_WINSSL', 1, 'Have WinSSL suppurt in cURL');
 		if (PHP_CURL != "no") {
